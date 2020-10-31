@@ -1,4 +1,3 @@
-/*base_step的函数，计算最后一小段T的Ψ值*/
 int* base_step(char T[], int l)
 {
 	char a[1000][1000];
@@ -16,7 +15,6 @@ int* base_step(char T[], int l)
 	qsort(a, len, sizeof(a[0]), cmp);
 	/*for (int i = 0; i < len; i++)
 		printf("%s\n", a[i]);*/
-		//构建SA数组
 	int SA[n];
 	for (int m = 0; m < l; m++)
 	{
@@ -24,7 +22,6 @@ int* base_step(char T[], int l)
 	}
 	/*for (int i = 0; i < len; i++)
 		printf("%d\n", SA[i]);*/
-		//构建SA_1数组
 	int SA_1[n];
 	for (int q = 0; q < l; q++)
 	{
@@ -33,7 +30,6 @@ int* base_step(char T[], int l)
 	
 	//cout << len << endl;
 	//cout << strlen(a[0]);
-	//构建Ψ函数
 	int Ψ[n];
 	for (int p = 1; p < l; p++)
 	{
