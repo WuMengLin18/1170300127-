@@ -1,4 +1,39 @@
-int* base_step(char T[], int l)
+[j];
+		}
+		a[i + 1][k] = '\0';
+	}
+	qsort(a, len, sizeof(a[0]), cmp);
+	/*for (int i = 0; i < len; i++)
+		printf("%s\n", a[i]);*/
+		//构建SA数组
+	int SA[n];
+	for (int m = 0; m < l; m++)
+	{
+		SA[m] = len - strlen(a[m]);
+	}
+	/*for (int i = 0; i < len; i++)
+		printf("%d\n", SA[i]);*/
+		//构建SA_1数组
+	int SA_1[n];
+	for (int q = 0; q < l; q++)
+	{
+		SA_1[SA[q]] = q;
+	}
+
+	//cout << len << endl;
+	//cout << strlen(a[0]);
+	//构建Ψ函数
+	int Ψ[n];
+	for (int p = 1; p < l; p++)
+	{
+		Ψ[p] = SA_1[SA[p] + 1];
+	}
+	Ψ[0] = SA_1[0];
+	return &Ψ[0];
+}
+
+//计算suffix序列的函数
+int* base_sort(char T[], int x)
 {
 	char a[1000][1000];
 	strcpy(a[0], T);
@@ -15,26 +50,350 @@ int* base_step(char T[], int l)
 	qsort(a, len, sizeof(a[0]), cmp);
 	/*for (int i = 0; i < len; i++)
 		printf("%s\n", a[i]);*/
+		//构建SA数组
 	int SA[n];
-	for (int m = 0; m < l; m++)
+	for (int m = 0; m < x; m++)
 	{
 		SA[m] = len - strlen(a[m]);
 	}
-	/*for (int i = 0; i < len; i++)
-		printf("%d\n", SA[i]);*/
+	//构建SA_1数组
 	int SA_1[n];
-	for (int q = 0; q < l; q++)
+	for (int q = 0; q < x; q++)
 	{
 		SA_1[SA[q]] = q;
 	}
-	
-	//cout << len << endl;
-	//cout << strlen(a[0]);
-	int Ψ[n];
-	for (int p = 1; p < l; p++)
+	return &SA_1[0];
+}
+
+
+//输入两个字串，和前一个字串的位数，输出suffix_sort
+int* comulate_suffix_sort(char T3[], char T2[], int a, int b)
+{
+	/*//计算suffix_l到suffix_1
+	char suffix[n][n];
+	strcpy(suffix[b + 1], T3);
+	//cout << suffix[l+1] << endl;
+	int j = 0;
+	for (int i = b; i > 0; i--)
 	{
-		Ψ[p] = SA_1[SA[p] + 1];
+		suffix[i][0] = T2[b - 1 - j];
+		suffix[i][1] = '\0';
+		strcat(suffix[i], suffix[i + 1]);
+		suffix[i][strlen(suffix[i]) + 1] = '\0';
+		j++;
+		//cout << suffix[i] << endl;
 	}
-	Ψ[0] = SA_1[0];
-	return &Ψ[0];
+	//计算suffix的序列（按字典序） 数组suffix_sort从0开始到l-1
+	*/
+	//strcpy(T2, T3);
+	int *suffix_sortt = base_sort(T2, b);
+	return suffix_sortt;
+}
+
+
+//计算lc
+int* comulate_lc(int lc[], int T_SA[], char T3[], char T2[], int a, int b)
+{
+	//计算lc和rc
+	for (int i = 0; i < b; i++)
+	{
+		lc[i] = 0;
+	}
+	for (int j = 0; j < b; j++)
+	{
+		for (int i = 0; i < a; i++)
+		{
+			if (T2[b - 1 - j] > T3[T_SA[i]])
+			{
+				lc[b - 1 - j]++;
+			}
+		}
+	}
+	/*for (int i = 0; i < strlen(T2); i++)
+	{
+		cout << lc[i] << endl;
+	}*/
+	return &lc[0];
+}
+
+//计算rc
+int* comulate_rc(int rc[], int T_SA[], char T3[], char T2[], int a, int b)
+{
+	//计算lc和rc
+	//int * T_SA = comulate_SA(T3, l);
+	/*for (int i = 0; i < strlen(T3); i++)
+	{
+		cout << T3[T_SA[i]] << endl;
+	}*/
+	//int rc[n];
+	for (int i = 0; i < b; i++)
+	{
+		rc[i] = a;
+	}
+	for (int j = 0; j < b; j++)
+	{
+		for (int i = 0; i < a; i++)
+		{
+			if (T2[b - 1 - j] < T3[T_SA[a - 1 - i]])
+			{
+				rc[b - 1 - j]--;
+			}
+		}
+		rc[b - 1 - j]--;
+	}
+	/*for (int i = 0; i < strlen(T2); i++)
+	{
+		cout << rc[i] << endl;
+	}*/
+	return &rc[0];
+}
+
+//merge b
+int * merge_b(int order[], int Ψ_[], int lc[], int rc[], int order_suf[], int a, int b)
+{
+	for (int j = 0; j < b; j++)
+	{
+		int b1;
+		bool flag = false;
+		for (int i = 0; i < a; i++)
+		{
+			if (Ψ_[i] <= order[b - 1 - j])
+			{
+				if (lc[b - 1 - j] <= i && rc[b - 1 - j] >= i)
+				{
+					b1 = i;
+					flag = true;
+				}
+			}
+			//空集
+			if (j != b - 1)
+			{
+				if (!flag)
+				{
+					//计算这个order时有点问题
+					order[b - 1 - j - 1] = lc[b - 1 - j] - 1;
+					order_suf[b - 1 - j] = lc[b - 1 - j] - 1;
+				}
+				else
+				{
+					//计算这个order时有点问题
+					order[b - 1 - j - 1] = b1;
+					order_suf[b - 1 - j] = b1;
+					//cout << 6 - j<< endl;
+				}
+			}
+			else
+			{
+				if (!flag)
+				{
+					//计算这个order时有点问题
+					order_suf[b - 1 - j] = lc[b - 1 - j] - 1;
+				}
+				else
+				{
+					//计算这个order时有点问题
+					order_suf[b - 1 - j] = b1;
+					//cout << 6 - j<< endl;
+				}
+			}
+		}
+		//cout << "order_suf[" << 6 - j << "]" << order_suf[l - 1 - j] << endl;
+	}
+	return &order_suf[0];
+}
+int *comulate_f(int f[], int order_suf[], int T_SA_1[], int a, int b)
+{
+	for (int m = 0; m < a; m++)
+	{
+		int j1 = T_SA_1[m];
+		int number = 0;
+		for (int k = 0; k < b; k++)
+		{
+			if (order_suf[k] < j1)
+			{
+				number++;
+			}
+		}
+		f[j1] = j1 + number;
+
+	}
+	f[0] = 0;
+
+	return &f[0];
+}
+int *comulate_g(int g[], int order_suf[], int suffix_sort[], int a, int b)
+{
+	for (int x = 0; x < b; x++)
+	{
+		g[x] = order_suf[x] + suffix_sort[x] + 1;
+	}
+	//cout << "g" << endl;
+	/*for (int i = 0; i < l; i++)
+	{
+		cout << "输出" << endl;
+		cout << g[i] << endl;
+	}*/
+	return &g[0];
+}
+int * merge_c(int a, int b, int g[], int f[], int A[], int Ψ_[])
+{
+	for (int j = 1; j < a; j++)
+	{
+		A[f[j]] = f[Ψ_[j]];
+	}
+	A[g[b]] = f[Ψ_[0]];
+	for (int i = 1; i < b; i++)
+	{
+		A[g[i]] = g[i + 1];
+	}
+	for (int i = 1; i < b; i++)
+	{
+		cout<<g[i+1]<<endl;
+	}
+	A[0] = g[1];
+	return &A[0];
+}
+int *merge(int a, int b, char T2[], char T3[], int A[], int Ψ_[], int T_SA_1[])
+{
+	int *suffix_sortt = comulate_suffix_sort(T3, T2, a, b);
+	int suffix_sort[n];
+	for (int i = 0; i < b; i++)
+	{
+		suffix_sort[i] = suffix_sortt[i];
+		//cout << suffix_sort[i]<<endl;
+	}
+	int lllc[n];
+	int *llc = comulate_lc(lllc, T_SA_1, T3, T2, a, b);
+	int lc[n];
+	for (int i = 0; i < b; i++)
+	{
+		lc[i] = llc[i];
+		//cout << lc[i] << endl;
+	}
+	int rrrc[n];
+	int *rrc = comulate_rc(rrrc, T_SA_1, T3, T2, a, b);
+	int rc[n];
+	for (int i = 0; i < b; i++)
+	{
+		rc[i] = rrc[i];
+		//cout << rc[i] << endl;
+	}
+
+	//Merge的b步
+
+	int order[n];
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+	order[b - 1] = T_SA_1[0];
+	int order_suf[n];
+	int *oorder_suf = merge_b(order, Ψ_, lc, rc, order_suf, a, b);
+	for (int i = 0; i < b; i++)
+	{
+		//order_suf[i] = oorder_suf[i];
+		cout << "看这里" << endl;
+		cout << order_suf[i] << endl;
+	}
+
+	//cout << "f" << endl;
+	//merge c(计算f函数)
+	//Suppose SA−1 T[m] = j.Then SA−1 TiT[m] is equal to
+		//f(j) = j + #(order(sufk, T) ≤ j),
+	int f[n];
+	int *ff = comulate_f(f, order_suf, T_SA_1, a, b);
+	for (int i = 0; i < a; i++)
+	{
+		f[i] = ff[i];
+		//cout << f[i] << endl;
+	}
+
+	//cout << "g" << endl;
+	//merge c(计算g函数)
+	//For all j ∈ [1, ], SA−1 TiT [j] is equal to
+	//g(j) = order(sufj, T) + #(sufk ≤ sufj)
+	int ggg[n];
+	int g[n];
+	int *gg = comulate_g(g, order_suf, suffix_sort, a, b);
+	for (int i = 0; i < b; i++)
+	{
+		ggg[i] = gg[i];
+		//cout << g[i] << endl;
+	}
+	cout << "这里" << endl;
+	for (int i = 0; i < b + 1; i++)
+	{
+		g[0] = 0;
+		g[i + 1] = ggg[i];
+		//cout << g[i] << endl;
+	}
+
+
+	//merge合并
+	cout << "从这里开始" << endl;
+	//int A[n];
+	int *AA = merge_c(a, b, g, f, A, Ψ_);
+	for (int i = 0; i < a + b; i++)
+	{
+		A[i] = AA[i];
+		//cout << A[i] << endl;
+	}
+	return &A[0];
+}
+
+
+
+
+int main()
+{
+	char T[n] = "ATGAATCGTATTGC$";
+	//向上取整函数ceil
+	//int l = ceil(n / log(n));
+	//int set_number = n / l + 1;
+	char T3[] = "CAGAC$";
+	char T2[] = "GCA";
+
+	int a = strlen(T3);
+	int b = strlen(T2);
+	//cout << a << "," << b<<endl;
+
+	int *Ψ = base_step(T3, a);
+	int Ψ_[n];
+	cout << "answer!!!!!!!!" << endl;
+	for (int i = 0; i < a; i++)
+	{
+		Ψ_[i] = Ψ[i];
+		cout << Ψ_[i] << endl;
+	}
+
+	int  * T_SA_11 = base_sort(T3, a);
+	int T_SA_1[n];
+	for (int i = 0; i < a; i++)
+	{
+		T_SA_1[i] = T_SA_11[i];
+		//cout << T_SA_1[i];
+	}
+
+		int AA[n];
+		cout << a << "," << b << endl;
+		int *AAAA = merge(a, b, T2, T3, AA, Ψ_, T_SA_1);
+		int A[n];
+		for (int i = 0; i < a + b; i++)
+		{
+			A[i] = AA[i];
+			cout << A[i] << endl;
+		}
+
+		//字符串序列的合并
+		//T1_SA_1
+		int T1_SA_1[n];
+		T1_SA_1[a + b - 1] = 0;
+		for (int i = 0; i < a + b; i++)
+		{
+			for (int j = 0; j < a + b ; j++)
+			{
+				if (A[j] == T1_SA_1[a + b - 1 - i])
+				{
+					T1_SA_1[a + b - 1 - i - 1] = j;
+				}
+			}
+		}
+
 }
